@@ -1,0 +1,63 @@
+Delete bcok unused
+#    c.execute("DELETE from player where Player_ID=2;");
+#    print " deleted record 2"
+#    c.execute("DELETE from player where Player_ID=3;");
+#    print " deleted record 3"
+#    c.execute("DELETE from player where Player_ID=4;");
+#    print " deleted record 4"
+#    c.execute("DELETE from player where Player_ID=5;");
+#    print " deleted record 5"
+#    c.execute("DELETE from player where Player_ID=6;");
+#    print " deleted record 6"
+#    c.execute("DELETE from player where Player_ID=7;");
+#    print " deleted record 7"
+#    c.execute("DELETE from player where Player_ID=8;");
+#    print " deleted record 8"
+#    c.execute("DELETE from player where Player_ID=9;");
+#    print " deleted record 9"
+#    c.execute("DELETE from player where Player_ID=10;");
+#    print " deleted record 10"
+
+Inserted code
+
+ c.execute("Insert into player(Player_ID,Player_NAME, \
+                player_no_of_gms_plyd,Player_number_wins)\
+                Values(1,'P-1',0,0)");
+    print "record-1 instered"
+
+    c.execute("Insert into player(Player_ID,Player_NAME, \
+               player_no_of_gms_plyd,Player_number_wins) \
+               Values(2,'P-2',0,0)");
+    print "record-2 instered"
+    c.execute("Insert into player(Player_ID,Player_NAME,\
+              player_no_of_gms_plyd,Player_number_wins) \
+              Values(3,'P-3',0,0)");
+    print "record-3 instered"
+    c.execute("Insert into player(Player_ID,Player_NAME,\
+                player_no_of_gms_plyd,Player_number_wins)\
+                Values(4,'P-4',0,0)");
+    print "record-4 instered"
+    c.execute("Insert into player(Player_ID,Player_NAME,"
+                "player_no_of_gms_plyd,Player_number_wins)"
+                "Values(5,'P-5',0,0)");
+    print "record-5 instered"
+    c.execute("Insert into player(Player_ID,Player_NAME, \
+                player_no_of_gms_plyd,Player_number_wins) \
+                Values(6,'P-6',0,0)");
+    print "record-6 instered"
+    c.execute("Insert into player(Player_ID,Player_NAME,\
+                player_no_of_gms_plyd,Player_number_wins)\
+                Values(7,'P-7',0,0)");
+    print "record-7 instered"
+    c.execute("Insert into player(Player_ID,Player_NAME,\
+                player_no_of_gms_plyd,Player_number_wins)\
+                Values(8,'P-8',0,0)");
+    print "record-8 instered"
+    c.execute("Insert into player(Player_ID,Player_NAME, \
+                player_no_of_gms_plyd,Player_number_wins) \
+                Values(9,'P-9',0,0)");
+    print "record-9 instered"
+    c.execute("Insert into player(Player_ID,Player_NAME, \
+                player_no_of_gms_plyd,Player_number_wins) \
+                Values(10,'P-10',0,0)");
+    print "record-10 instered"  

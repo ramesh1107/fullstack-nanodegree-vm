@@ -4,7 +4,7 @@
 '''
 This program is used for implementation of a Swiss-system tournament.
 This program has code to creat required tables and drops these tables.
-This program has code to insert, update, delete data from tables.
+This program has cide to insert, update, delete data from tables.
 There are 4 tables used in this program
 plyr- Has the player information like id and name
 tournament- This table is used to ensure this program can have matches across
@@ -17,78 +17,85 @@ score card- This table is used to list score of all scores across players in
 This program has options to give byes in case we have odd number of players
 
 
+
 '''
 import psycopg2
 
-"""Connect to the PostgreSQL database.  Returns a database connection."""
 
-
-def connect(database_name="tournament"):
-    try:
-        DB = psycopg2.connect("dbname={}".format(database_name))
-        c = DB.cursor()
-        print "db connected"
-        return DB, c
-    except:
-        print("unable to connect to database")
-
+def connect():
+    """Connect to the PostgreSQL database.  Returns a database connection."""
+    return psycopg2.connect("dbname=tournament")
 
 """This procedure is to create the requred tables
 This code is used to create tables called
     plyr
     tournament
     match
-The player table has 5 columns which are
+    scorecard
+The player table has 2 columns which are
     ID (to uniquley identify a Player-assigned by the database)
     Name ( Name of the player)
-    tid ( a serial number to uniquley identify any given
-                tournament-assigned by the database)
-    score  (score for match)
-    matches (Number of matches)
-    bye ( to indicate number of bye)
 The tournament table has 2 columns which are
     ID (to uniquley identify a tournament-assigned by the database)
     Name ( Name of the tournament)
 The match table has 5 columns which are
-    tid ( a serial number to uniquley identify any given
-          tournament-assigned by the database)
+    match_ID ( a serial number to uniquley identify any given
+                match-assigned by the database)
+    tournament ( a serial number to uniquley identify any given
+                tournament-assigned by the database)
     winner  (to uniquley identify a Player-id)
     loser  (to uniquley identify a Player-id)
-    draw (True in case of draw or false otherwise)
+    draw (result of the game)
+ The tournament table has 5 columns which are
+   match_ID ( a serial number to uniquley identify any given
+                match-assigned by the database)
+   tournament ( a serial number to uniquley identify any given
+                tournament-assigned by the database)
+   plyr  (to uniquley identify a Player-id)
+   score  (score for match)
+   match (match id )
+   bye ( score for bye)
 """
 
 
 def createtable():
-    DB, c = connect()
-    c.execute("create table  tournament\
-        (tid SERIAL primary key ,\
-        trnname TEXT Not Null );")
+    DB = connect()
+    c = DB.cursor()
 
     c.execute("create table plyr (\
-        pid   serial ,\
-        pname TEXT Not Null,\
-        tid int references tournament(tid) ON DELETE CASCADE,\
-        score       Int Not Null DEFAULT 0,\
-        matches      INT  Not Null DEFAULT 0,\
-        bye      int Not Null DEFAULT 0);")
-    c.execute("create table  match\
-        (tid      INT  Not Null references tournament(tid) ON DELETE CASCADE ,\
-        Winner     Int  Not Null ,\
-        loser      INT    ,\
+        ID SERIAL ,\
+        NAME TEXT Not Null);")
+    c.execute("create table  tournament(\
+        ID SERIAL ,\
+        NAME TEXT Not Null );")
+    c.execute("create table  match(\
+        trnmnt_id      INT  Not Null ,\
+        Winner       Int  Not Null,\
+        loser      INT    Not Null,\
+        score       Int Not Null , \
+        matches      INT  Not Null,\
+        bye      int Not Null,\
         draw      boolean Not Null);")
+    #c.execute("create table  scorecard(\
+    #    tournament      INT  Not Null ,\
+    #    plyr       Int  Not Null,\
+    #    score       Int Not Null ,\
+    #    matches      INT  Not Null,\
+    #    bye      int Not Null);")
     DB.commit()
     DB.close()
-
 '''
 This procedure is used to drop tables when not required
 '''
 
 
 def droptable():
-    DB, c = connect()
-    c.execute("DROP TABLE IF EXISTS tournament cascade")
-    c.execute("DROP TABLE IF EXISTS plyr")
-    c.execute("DROP TABLE IF EXISTS match")
+    DB = connect()
+    c = DB.cursor()
+    c.execute("Drop TABLE  plyr")
+    c.execute("Drop TABLE  tournament")
+    c.execute("Drop TABLE match")
+    #c.execute("Drop TABLE  scorecard")
     DB.commit()
     DB.close()
 
@@ -96,34 +103,44 @@ def droptable():
 
 
 def deleteMatches():
-    DB, c = connect()
+    DB = connect()
+    c = DB.cursor()
     c.execute("DELETE from match;")
     DB.commit()
     DB.close()
 
 
 def deletePlayers():
-    DB, c = connect()
+    DB = connect()
+    c = DB.cursor()
     c.execute("DELETE from plyr;")
     DB.commit()
     DB.close()
 
 
 def deletetournament():
-    DB, c = connect()
+    DB = connect()
+    c = DB.cursor()
     c.execute("DELETE from tournament;")
     DB.commit()
     DB.close()
 
-
+'''
+def deletescorecard():
+    DB = connect()
+    c = DB.cursor()
+    c.execute("DELETE from scorecard;")
+    DB.commit()
+    DB.close()
+'''    
 """Returns the number of players currently registered for a given tournament"""
 
 
 def countplyr(tid):
-    DB, c = connect()
-    c.execute("Select count(pid) from plyr")
+    DB = connect()
+    c = DB.cursor()
+    c.execute("Select count(ID) from plyr")
     post = (c.fetchone())
-    print "count of players", post
     return post[0]
 
 """Adds a player to the tournament database.
@@ -134,38 +151,38 @@ def countplyr(tid):
 """
 
 
-def createTournament(trname):
+def createTournament(name):
     """Create a new tournament.
     Args: Name of tournament
     """
-    DB, c = connect()
-    sql = "INSERT INTO tournament (trnname) VALUES (%s) RETURNING tid"
-    c.execute(sql, (trname,))
+    DB = connect()
+    c = DB.cursor()
+    sql = "INSERT INTO tournament (name ) VALUES (%s) RETURNING id"
+    c.execute(sql, (name,))
     tid = c.fetchone()[0]
     DB.commit()
     DB.close()
     return tid
 
 """Adds a player to the tournament database.
-    The database assigns a unique serial id number for the player.  (This
-    should be handled by your SQL database schema, not in your Python code.)
+    The database assigns a unique serial id number for the player.
     Args:
       name: the player's full name (need not be unique).
       tid: id of tournament they are entering.
 """
 
 
-def registerPlyr(tid, pname):
-    DB, c = connect()
-    print "inserting into plyr tournament id", tid
-    plyr = "INSERT INTO plyr (pname,tid,score,matches,bye )\
-            VALUES (%s,%s,0,0,0) RETURNING pid"
-    c.execute(plyr, (pname, tid))
-    pid = c.fetchone()[0]
-    print "inserted player", tid, pname, pid
+def registerPlyr(name, tid):
+    DB = connect()
+    c = DB.cursor()
+    plyr = "INSERT INTO plyr (name ) VALUES (%s) RETURNING id"
+    #scorecard = "INSERT INTO match (trnmnt_id, Winner,loser,score,matches,bye,draw)\
+    #             VALUES (%s,%s,%s,%s,%s,%s,%s)"
+    #c.execute(plyr, (name,))
+    #plyrid = c.fetchone()[0]
+    #c.execute(scorecard, (tid, plyrid, 0, 0, 0))
     DB.commit()
     DB.close()
-    return pid
 
 """Returns a list of the players and their win records, sorted by wins.
     The first entry in the list will be the player in first place,
@@ -185,16 +202,29 @@ def registerPlyr(tid, pname):
 
 def plyrStandings(tid):
 
-    DB, c = connect()
-    c.execute("SELECT pid, pname ,score,matches\
-                FROM plyr\
-                WHERE tid = tid \
-                ORDER BY score DESC, matches DESC""")
+    DB = connect()
+    c = DB.cursor()
+    plyrs = """SELECT s.plyr, p.name, s.score, s.matches, s.bye,
+                    (SELECT SUM(s2.score)
+                     FROM scorecard AS s2
+                     WHERE s2.plyr IN (SELECT loser
+                                     FROM match
+                                     WHERE winner = s.plyr
+                                     AND tournament = %s)
+                     OR s2.plyr IN (SELECT winner
+                                 FROM match
+                                 WHERE loser = s.plyr
+                                 AND tournament = %s)) AS owm
+                 FROM scorecard AS s
+                 INNER JOIN plyr AS p on p.id = s.plyr
+                 WHERE tournament = %s
+                 ORDER BY s.score DESC, owm DESC, s.matches DESC"""
+
+    c.execute(plyrs, (tid, tid, tid))
     ranks = []
     for row in c.fetchall():
         ranks.append(row)
     DB.close()
-    print "current ranks", ranks
     return ranks
 """Records the outcome of a single match between two players.
     Args:
@@ -205,20 +235,23 @@ def plyrStandings(tid):
 """
 
 
-def reportMatch(tid, winner, loser, draw):
-    if draw == 'true':
+def reportMatch(tid, winner, loser, draw='FALSE'):
+
+    if draw == 'TRUE':
         w_points = 1
         l_points = 1
     else:
         w_points = 3
         l_points = 0
-    DB, c = connect()
-    ins = "INSERT INTO match (tid, winner, loser, draw) \
+
+    DB = connect()
+    c = DB.cursor()
+    ins = "INSERT INTO match (tournament, winner, loser, draw) \
             VALUES (%s,%s,%s,%s)"
-    win = "UPDATE plyr SET score = score+%s, matches = matches+1\
-            WHERE pid = %s AND tid = %s"
-    los = "UPDATE plyr SET score = score+%s, matches = matches+1 \
-            WHERE pid = %s AND tid = %s"
+    win = "UPDATE scorecard SET score = score+%s, matches = matches+1\
+            WHERE plyr = %s AND tournament = %s"
+    los = "UPDATE scorecard SET score = score+%s, matches = matches+1 \
+            WHERE plyr = %s AND tournament = %s"
     c.execute(ins, (tid, winner, loser, draw))
     c.execute(win, (w_points, winner, tid))
     c.execute(los, (l_points, loser, tid))
@@ -233,13 +266,14 @@ def reportMatch(tid, winner, loser, draw):
 """
 
 
-def hasBye(pid, tid):
-    DB, c = connect()
+def hasBye(id, tid):
+    DB = connect()
+    c = DB.cursor()
     sql = """SELECT bye
-             FROM plyr
-             WHERE pid = %s
-             AND tid = %s"""
-    c.execute(sql, (pid, tid))
+             FROM scorecard
+             WHERE plyr = %s
+             AND tournament = %s"""
+    c.execute(sql, (id, tid))
     bye = c.fetchone()[0]
     DB.close()
     if bye == 0:
@@ -254,11 +288,12 @@ def hasBye(pid, tid):
 """
 
 
-def reportBye(pid, tid):
-    DB, c = connect()
-    bye = "UPDATE plyr SET score = score+3, bye=bye+1 \
-           WHERE pid = %s AND tid = %s"
-    c.execute(bye, (pid, tid))
+def reportBye(plyr, tid):
+    DB = connect()
+    c = DB.cursor()
+    bye = "UPDATE scorecard SET score = score+3, bye=bye+1 \
+           WHERE plyr = %s AND tournament = %s"
+    c.execute(bye, (plyr, tid))
     DB.commit()
     DB.close()
 
@@ -311,13 +346,14 @@ def checkPairs(tid, ranks, id1, id2):
 
 
 def validPair(p1, p2, tid):
-    DB, c = connect()
+    DB = connect()
+    c = DB.cursor()
     sql = """SELECT winner, loser
              FROM match
              WHERE ((winner = %s AND loser = %s)
                     OR (winner = %s AND loser = %s))
-             AND tid = %s"""
-    c.execute(sql, (p1, p2, p2, p1, 1))
+             AND tournament = %s"""
+    c.execute(sql, (p1, p2, p2, p1, tid))
     matches = c.rowcount
     DB.close()
     if matches > 0:
